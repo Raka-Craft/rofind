@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoFind — Cari Map Roblox dengan Bahasa Sendiri</title>
+<style>
+:root{
+  --bg:#0e1117; --bg2:#151a24; --card:#1a1f2b; --card2:#222938;
+  --text:#eef1f7; --muted:#9aa3b5; --border:#2a3245;
+  --accent:#8b5cf6; --accent2:#38bdf8; --glow:rgba(139,92,246,.45);
+}
+[data-theme="light"]{
+  --bg:#f2f4f8; --bg2:#ffffff; --card:#ffffff; --card2:#eef1f6;
+  --text:#111827; --muted:#5b6472; --border:#dde3ec; --glow:rgba(139,92,246,.25);
+}
+[data-theme="amoled"]{
+  --bg:#000000; --bg2:#050505; --card:#0a0a0a; --card2:#111111;
+  --text:#f2f2f2; --muted:#9a9a9a; --border:#222222; --glow:rgba(139,92,246,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:inherit}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;max-width:1200px;margin:0 auto}
+.logo{font-weight:900;letter-spacing:.12em;font-size:20px}
+.logo span{color:var(--accent)}
+.topbtns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--border);background:var(--card);color:var(--text);padding:9px 14px;border-radius:999px;cursor:pointer;font-size:14px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.hero{max-width:820px;margin:10px auto 0;padding:0 20px;text-align:center}
+.hero h1{font-size:clamp(26px,5vw,42px);margin:10px 0 8px;line-height:1.15}
+.hero p{color:var(--muted);margin:0 0 18px;line-height:1.6}
+.searchwrap{position:relative}
+.searchwrap input{width:100%;padding:18px 52px 18px 52px;border-radius:18px;border:2px solid var(--border);background:var(--card);color:var(--text);font-size:17px;outline:none;box-shadow:0 0 0 0 var(--glow),0 12px 40px rgba(0,0,0,.25)}
+.searchwrap input:focus{border-color:var(--accent);box-shadow:0 0 24px var(--glow)}
+.searchwrap .icon{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:20px}
+.searchwrap .clear{position:absolute;right:14px;top:50%;transform:translateY(-50%);border:0;background:var(--card2);color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:none}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:14px 0 6px}
+.chip{border:1px solid var(--border);background:var(--card);color:var(--text);padding:8px 13px;border-radius:999px;cursor:pointer;font-size:13px}
+.chip:hover,.chip.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,var(--card))}
+.toolbar{max-width:1200px;margin:22px auto 0;padding:0 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+select{border:1px solid var(--border);background:var(--card);color:var(--text);padding:9px 12px;border-radius:999px;font-size:14px}
+.status{max-width:1200px;margin:14px auto 0;padding:0 20px;color:var(--muted);font-size:14px;line-height:1.6}
+.grid{max-width:1200px;margin:16px auto 40px;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.card:hover{transform:translateY(-5px);box-shadow:0 16px 36px rgba(0,0,0,.35);border-color:var(--accent)}
+.cover{aspect-ratio:16/9;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;position:relative}
+.cover .cat{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.cover .rate{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.cover .bigt{font-size:clamp(22px,3vw,30px);font-weight:900;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.cardbody{padding:16px}
+.cardbody h3{margin:0 0 6px;font-size:18px}
+.meta{color:var(--muted);font-size:13px;margin-bottom:10px}
+.mech{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.mech span{font-size:12px;border:1px solid var(--border);background:var(--card2);padding:5px 9px;border-radius:999px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.actions .btn{flex:1;text-align:center;text-decoration:none}
+.favbtn{flex:0 0 auto !important;width:44px}
+.skeleton{height:300px;border-radius:20px;background:linear-gradient(100deg,var(--card) 40%,var(--card2) 50%,var(--card) 60%);background-size:200% 100%;animation:shimmer 1.2s infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+.empty{max-width:1200px;margin:20px auto;padding:28px 20px;text-align:center}
+.empty h2{margin:8px 0}
+.modalbg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;justify-content:center;padding:20px;z-index:50;overflow:auto}
+.modalbg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px;max-width:640px;width:100%;padding:22px;margin-top:30px}
+.modal h2{margin-top:0}
+.drawer{position:fixed;top:0;right:0;width:min(360px,92vw);height:100%;background:var(--bg2);border-left:1px solid var(--border);padding:20px;z-index:60;overflow:auto;transform:translateX(105%);transition:transform .2s ease}
+.drawer.open{transform:none}
+.histitem{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);align-items:center}
+.histitem button{border:0;background:none;color:var(--accent);cursor:pointer}
+.swatches{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.swatch{width:42px;height:42px;border-radius:50%;border:3px solid transparent;cursor:pointer}
+.swatch.active{border-color:#fff;outline:2px solid var(--accent)}
+footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:13px;line-height:1.7}
+@media(max-width:600px){.topbar{padding:12px 14px}.hero{padding:0 14px}.grid{padding:0 14px}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">RO<span>FIND</span></div>
+  <div class="topbtns">
+    <button class="btn" id="tabAll">Semua Map</button>
+    <button class="btn" id="tabFav">❤️ Favorit Saya</button>
+    <button class="btn" id="histBtn">🕘 Riwayat</button>
+    <button class="btn" id="setBtn">⚙️ Pengaturan</button>
+  </div>
+</div>
+
+<div class="hero">
+  <h1>Cari map Roblox dengan bahasa sendiri</h1>
+  <p>Ketik aktivitas yang kamu mau mainkan, misal <b>"game balapan"</b>, <b>"game yang bisa berenang"</b>, atau <b>"game yang bisa mencuri telur"</b> — RoFind akan memahami maksudnya, bukan sekadar mencocokkan kata mentah-mentah.</p>
+  <div class="searchwrap">
+    <span class="icon">🔍</span>
+    <input id="q" type="text" placeholder="Mau main apa hari ini? misal: game balapan..." autocomplete="off">
+    <button class="clear" id="clearBtn" title="Hapus">×</button>
+  </div>
+  <div class="chips" id="quickChips">
+    <button class="chip" data-q="game yang bisa mencuri telur">🥚 Game mencuri telur</button>
+    <button class="chip" data-q="game balapan realistis">🏎️ Game balapan realistis</button>
+    <button class="chip" data-q="game yang bisa berenang">🏊 Game yang bisa berenang</button>
+    <button class="chip" data-q="horor bareng teman">👻 Horor bareng teman</button>
+    <button class="chip" data-q="game parkour lompat">🧗 Game parkour lompat</button>
+  </div>
+  <div style="margin-top:14px"><button class="btn primary" id="randomBtn">🎲 Pilihkan Map Acak</button></div>
+</div>
+
+<div class="toolbar">
+  <div class="filters" id="catFilters"></div>
+  <select id="sortSel" aria-label="Urutkan">
+    <option value="relevan">Urutkan: Paling Relevan</option>
+    <option value="populer">Urutkan: Paling Populer</option>
+    <option value="rating">Urutkan: Rating Tertinggi</option>
+  </select>
+</div>
+
+<div class="status" id="status"></div>
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty" style="display:none"></div>
+
+<footer>
+  <b>Catatan jujur:</b> angka pemain dan rating di kartu adalah data perkiraan dari dataset RoFind untuk mengurutkan popularitas — angka live sebenarnya bisa berubah setiap saat, cek langsung di halaman Roblox resminya. Link "Mainkan di Roblox" membuka halaman game resmi di roblox.com. Game yang link-nya belum terverifikasi ID-nya dibuka lewat pencarian resmi Roblox dengan judul game tersebut, jadi kamu tetap sampai ke game yang benar.
+</footer>
+
+<div class="modalbg" id="detailBg"><div class="modal" id="detailBox"></div></div>
+
+<div class="modalbg" id="setBg"><div class="modal">
+  <h2>⚙️ Pengaturan</h2>
+  <p><b>Mode Tampilan</b></p>
+  <div class="filters" id="themeBtns">
+    <button class="chip" data-theme="dark">Dark Mode</button>
+    <button class="chip" data-theme="light">Light Mode</button>
+    <button class="chip" data-theme="amoled">AMOLED Midnight</button>
+  </div>
+  <p><b>Warna Utama (Accent)</b></p>
+  <div class="swatches" id="swatches"></div>
+  <label style="display:flex;gap:10px;align-items:center">Warna custom (hex):
+    <input type="color" id="customColor" value="#8b5cf6">
+  </label>
+  <div style="margin-top:18px;text-align:right"><button class="btn primary" id="closeSet">Tutup</button></div>
+</div></div>
+
+<div class="drawer" id="drawer">
+  <h2>🕘 Riwayat Pencarian</h2>
+  <div id="histList"></div>
+  <div style="margin-top:16px;display:flex;gap:8px">
+    <button class="btn" id="clearHist">Hapus Semua Riwayat</button>
+    <button class="btn primary" id="closeDrawer">Tutup</button>
+  </div>
+</div>
+
+<script>
+/* ============ SYNONYM MAPPER (Indonesia -> English tags) ============ */
+const SYNONYMS = {
+  "balapan":["racing","car","driving","vehicle","speed","drift","motorsport","track"],
+  "balap":["racing","car","driving","vehicle","speed","drift"],
+  "mobil":["car","driving","vehicle","racing"],
+  "motor":["motorcycle","bike","driving","racing"],
+  "ngebut":["speed","racing","driving","drift"],
+  "kendaraan":["vehicle","car","driving"],
+  "drift":["drift","racing","car"],
+  "kecepatan":["speed","racing"],
+  "berenang":["swimming","water","ocean","pool","diving","sea","boat","island","aquatic","flood"],
+  "renang":["swimming","water","pool"],
+  "air":["water","swimming","ocean","sea","flood"],
+  "laut":["ocean","sea","water","boat","island"],
+  "menyelam":["diving","water","ocean","swimming"],
+  "kolam":["pool","swimming","water"],
+  "kapal":["boat","sea","ocean"],
+  "pulau":["island","sea","exploration"],
+  "banjir":["flood","water","escape"],
+  "hiu":["shark","sea","ocean","survival"],
+  "memancing":["fishing","water","boat"],
+  "ikan":["fishing","water","sea"],
+  "mencuri":["steal","egg","thief","rob","hatch"],
+  "curi":["steal","thief","rob"],
+  "telur":["egg","hatch","steal"],
+  "maling":["thief","steal","rob"],
+  "rampok":["rob","steal","thief"],
+  "horor":["horror","scary","ghost","escape","monster","survival"],
+  "hantu":["ghost","horror","scary"],
+  "seram":["scary","horror","monster"],
+  "kabur":["escape","horror","survival"],
+  "takut":["scary","horror"],
+  "monster":["monster","horror","survival"],
+  "pedang":["sword","fighting","combat","battle"],
+  "berantem":["fighting","combat","pvp","battle"],
+  "perang":["war","battle","fighting","combat"],
+  "tembak":["shooter","gun","combat","pvp"],
+  "senjata":["gun","sword","combat"],
+  "lawan":["pvp","fighting","battle","combat"],
+  "parkour":["obby","parkour","jump","tower","climb"],
+  "lompat":["jump","parkour","obby","climb"],
+  "rintangan":["obby","parkour","jump","tower"],
+  "menara":["tower","obby","climb"],
+  "panjat":["climb","parkour","tower"],
+  "kerja":["work","tycoon","simulator","roleplay"],
+  "simulasi":["simulator","tycoon","roleplay","work"],
+  "membangun":["build","tycoon","town"],
+  "kaya":["tycoon","simulator","money"],
+  "bisnis":["tycoon","work","town"],
+  "toko":["tycoon","shop","town"],
+  "restoran":["restaurant","tycoon","work"],
+  "pelihara":["pet","simulator"],
+  "hewan":["pet","animal"],
+  "taman":["garden","farm","tycoon"],
+  "kebun":["garden","farm"],
+  "teman":["multiplayer","friends","coop"],
+  "bareng":["multiplayer","friends","coop"],
+  "mabar":["multiplayer","friends"],
+  "multiplayer":["multiplayer","friends"],
+  "peran":["roleplay","town"],
+  "kota":["town","roleplay","city"],
+  "rumah":["house","roleplay","town"],
+  "polisi":["police","escape","rob"],
+  "penjara":["prison","escape","police"],
+  "bertahan":["survival","escape"],
+  "selamat":["survival","escape"],
+  "masak":["cooking","restaurant","work"],
+  "menembak":["shooter","gun","pvp"]
+};
+const STOPWORDS = new Set(["game","games","map","yang","bisa","ada","tempat","untuk","di","roblox","aku","saya","mau","cari","carikan","tolong","dong","sih","aja","main","mainkan","bermain","sama","dengan","dan","atau","dari","ke","ini","itu","seperti","kayak","yangbisa","ingin","pengen","lagi","sangat","paling","cariin","aplikasi","hal","nya","si","kok"]);
+function tokenize(text){
+  return (text||"").toLowerCase().replace(/[^a-z0-9\s]/g," ").split(/\s+/).filter(w=>w && !STOPWORDS.has(w));
+}
+function expandTokens(tokens){
+  const tags = new Set();
+  tokens.forEach(t=>{
+    (SYNONYMS[t]||[]).forEach(x=>tags.add(x));
+    // kata majemuk: "balapan" sudah dipetakan; "berenang" sudah dipetakan
+  });
+  return [...tags];
+}
+
+/* ============ DATABASE: 57 MAP POPULER ============
+   link: link Roblox resmi. Untuk game yang ID tempatnya sudah terverifikasi,
+   link langsung ke halaman game; sisanya lewat pencarian resmi Roblox
+   berdasarkan judul (bukan ID tebakan). */
+const GAMES = [
+{id:"driving-empire",title:"Driving Empire",cat:"Balapan",rating:94,playing:20500,tags:["racing","car","driving","vehicle","speed","drift","motorsport","track","custom"],mechanics:["Bisa balapan mobil","Custom mobil dan modifikasi mesin","Balapan drag dan drift","Jelajah kota bareng teman"],desc:"Game balapan mobil open-world di kota Wayfort. Beli, kustomisasi, dan balapkan ratusan mobil berlisensi.",link:"https://www.roblox.com/games/3351674303/Driving-Empire",color:["#0ea5e9","#1e3a8a"]},
+{id:"vehicle-legends",title:"Vehicle Legends",cat:"Balapan",rating:92,playing:4800,tags:["racing","car","driving","vehicle","speed","track"],mechanics:["Bisa balapan mobil","Kumpul mobil dan upgrade","Balapan bareng teman"],desc:"Balapan dan kumpulkan berbagai mobil, dari mobil klasik sampai supercar.",link:"https://www.roblox.com/discover/?Keyword=Vehicle%20Legends",color:["#f97316","#7c2d12"]},
+{id:"car-crushers-2",title:"Car Crushers 2",cat:"Balapan",rating:93,playing:15200,tags:["racing","car","driving","vehicle","crash","speed"],mechanics:["Bisa balapan mobil","Hancurkan mobil di crusher","Balapan derby"],desc:"Balapan, hancurkan mobil di berbagai mesin crusher, dan kumpulkan mobil baru.",link:"https://www.roblox.com/discover/?Keyword=Car%20Crushers%202",color:["#ef4444","#450a0a"]},
+{id:"race-clicker",title:"Race Clicker",cat:"Balapan",rating:90,playing:9600,tags:["racing","race","speed","click","run"],mechanics:["Bisa balapan lari","Klik untuk tambah kecepatan","Kumpul pet dan menang"],desc:"Klik untuk jadi semakin cepat, lalu balapan lari melawan pemain lain.",link:"https://www.roblox.com/games/9285238704/Race-Clicker",color:["#22c55e","#052e16"]},
+{id:"midnight-racing",title:"Midnight Racing: Tokyo",cat:"Balapan",rating:91,playing:7200,tags:["racing","car","driving","drift","speed","track","motorsport"],mechanics:["Bisa balapan mobil malam hari","Drift di jalanan Tokyo","Custom mobil"],desc:"Balapan jalanan malam hari bergaya Tokyo dengan drift dan kustomisasi mobil.",link:"https://www.roblox.com/discover/?Keyword=Midnight%20Racing%20Tokyo",color:["#a855f7","#1e1b4b"]},
+{id:"ultimate-driving",title:"Ultimate Driving",cat:"Balapan",rating:89,playing:6100,tags:["driving","car","vehicle","racing","city"],mechanics:["Bisa mengendarai mobil keliling kota","Balapan bareng teman","Jadi polisi atau warga"],desc:"Berkendara bebas di kota besar, bisa balapan, jadi polisi, atau sekadar jalan-jalan.",link:"https://www.roblox.com/discover/?Keyword=Ultimate%20Driving",color:["#38bdf8","#082f49"]},
+{id:"drift-paradise",title:"Drift Paradise",cat:"Balapan",rating:88,playing:3400,tags:["drift","racing","car","driving","speed"],mechanics:["Bisa drift mobil","Balapan drift dan kumpul poin","Custom mobil"],desc:"Surga drifting: latih drift, kumpulkan poin, dan pamerkan skill di trek.",link:"https://www.roblox.com/discover/?Keyword=Drift%20Paradise",color:["#eab308","#422006"]},
+{id:"taxi-boss",title:"Taxi Boss",cat:"Balapan",rating:87,playing:2900,tags:["driving","car","vehicle","work","city"],mechanics:["Bisa mengendarai taksi","Antar penumpang dan cari uang","Beli mobil baru"],desc:"Jadi sopir taksi, antar penumpang keliling kota, dan kembangkan bisnismu.",link:"https://www.roblox.com/discover/?Keyword=Taxi%20Boss",color:["#facc15","#713f12"]},
+{id:"car-dealership-tycoon",title:"Car Dealership Tycoon",cat:"Balapan",rating:90,playing:8400,tags:["car","driving","tycoon","vehicle","racing"],mechanics:["Bisa balapan mobil","Bangun showroom mobil","Jual beli mobil"],desc:"Bangun dealer mobil sendiri, balapan, dan kembangkan bisnis otomotifmu.",link:"https://www.roblox.com/discover/?Keyword=Car%20Dealership%20Tycoon",color:["#14b8a6","#042f2e"]},
+{id:"bike-universe",title:"Bike Universe",cat:"Balapan",rating:88,playing:4900,tags:["bike","motorcycle","racing","driving","vehicle","speed"],mechanics:["Bisa balapan motor","Naik motor dan atraksi wheelie","Jelajah kota naik motor"],desc:"Dunia motor open-world: kumpulkan motor, atraksi, dan balapan di jalanan.",link:"https://www.roblox.com/discover/?Keyword=Bike%20Universe",color:["#f43f5e","#4c0519"]},
+{id:"sharkbite-2",title:"SharkBite 2",cat:"Air & Eksplorasi",rating:92,playing:11300,tags:["swimming","water","ocean","sea","boat","shark","survival"],mechanics:["Bisa berenang di laut","Kabur dari hiu naik kapal","Jadi hiu dan berburu pemain"],desc:"Bertahan hidup di laut: berenang, naik kapal, dan kabur dari hiu — atau jadi hiunya.",link:"https://www.roblox.com/discover/?Keyword=SharkBite%202",color:["#0284c7","#082f49"]},
+{id:"flood-escape-2",title:"Flood Escape 2",cat:"Air & Eksplorasi",rating:93,playing:9800,tags:["water","flood","swimming","escape","parkour","survival"],mechanics:["Bisa berenang dan kabur dari banjir","Parkour kabur dari air yang naik","Main bareng teman"],desc:"Kabur dari banjir yang naik: berenang, parkour, dan selamat sampai akhir.",link:"https://www.roblox.com/discover/?Keyword=Flood%20Escape%202",color:["#06b6d4","#164e63"]},
+{id:"fisch",title:"Fisch",cat:"Air & Eksplorasi",rating:95,playing:42100,tags:["fishing","water","boat","sea","island","exploration"],mechanics:["Bisa memancing di laut dan pulau","Naik kapal ke pulau baru","Kumpul ikan langka"],desc:"Game memancing santai: jelajahi pulau-pulau, naik kapal, dan tangkap ikan langka.",link:"https://www.roblox.com/discover/?Keyword=Fisch",color:["#0ea5e9","#0c4a6e"]},
+{id:"build-a-boat",title:"Build a Boat for Treasure",cat:"Air & Eksplorasi",rating:91,playing:7600,tags:["boat","water","sea","build","exploration"],mechanics:["Bisa membangun kapal","Berlayar di laut cari harta","Bangun kapal bareng teman"],desc:"Bangun kapalmu sendiri dari balok, lalu berlayar menyusuri sungai dan laut.",link:"https://www.roblox.com/discover/?Keyword=Build%20a%20Boat%20for%20Treasure",color:["#f59e0b","#78350f"]},
+{id:"sharkbite-1",title:"SharkBite",cat:"Air & Eksplorasi",rating:90,playing:3100,tags:["swimming","water","ocean","sea","boat","shark","survival"],mechanics:["Bisa berenang di laut","Kabur dari hiu","Jadi hiu"],desc:"Versi original SharkBite: bertahan dari hiu di tengah laut.",link:"https://www.roblox.com/discover/?Keyword=SharkBite",color:["#38bdf8","#0c4a6e"]},
+{id:"abyss-world",title:"Abyss World",cat:"Air & Eksplorasi",rating:86,playing:1200,tags:["water","ocean","sea","diving","exploration","aquatic"],mechanics:["Bisa menyelam di laut dalam","Jelajahi dunia bawah air","Temukan makhluk laut"],desc:"Jelajahi dunia bawah laut yang dalam dan misterius.",link:"https://www.roblox.com/discover/?Keyword=Abyss%20World",color:["#1d4ed8","#172554"]},
+{id:"deepwoken",title:"Deepwoken",cat:"Air & Eksplorasi",rating:94,playing:5400,tags:["swimming","water","exploration","sea","combat","survival"],mechanics:["Bisa berenang dan menjelajah","Bertarung dan eksplorasi dunia","Permadeath yang menantang"],desc:"RPG eksplorasi yang keras dan dalam, dengan dunia yang bisa dijelajahi lewat darat dan air.",link:"https://www.roblox.com/discover/?Keyword=Deepwoken",color:["#475569","#020617"]},
+{id:"fishing-simulator",title:"Fishing Simulator",cat:"Air & Eksplorasi",rating:87,playing:2100,tags:["fishing","water","boat","sea","island"],mechanics:["Bisa memancing","Naik kapal ke spot baru","Kumpul ikan dan jual"],desc:"Memancing santai di berbagai spot, dari danau sampai laut lepas.",link:"https://www.roblox.com/discover/?Keyword=Fishing%20Simulator",color:["#22d3ee","#155e75"]},
+{id:"pet-simulator-99",title:"Pet Simulator 99",cat:"Simulasi",rating:91,playing:38200,tags:["pet","simulator","animal","collect"],mechanics:["Bisa pelihara hewan peliharaan","Kumpul pet langka","Jelajah dunia baru"],desc:"Kumpulkan pet, buka telur, dan jelajahi dunia demi pet terlangka.",link:"https://www.roblox.com/discover/?Keyword=Pet%20Simulator%2099",color:["#c084fc","#581c87"]},
+{id:"grow-a-garden",title:"Grow a Garden",cat:"Simulasi",rating:93,playing:68400,tags:["garden","farm","tycoon","simulator","build"],mechanics:["Bisa berkebun dan menanam","Panen dan jual hasil kebun","Bangun kebun bareng teman"],desc:"Berkebun santai yang viral: tanam, panen, dan kembangkan kebunmu.",link:"https://www.roblox.com/discover/?Keyword=Grow%20a%20Garden",color:["#4ade80","#14532d"]},
+{id:"bee-swarm",title:"Bee Swarm Simulator",cat:"Simulasi",rating:92,playing:11400,tags:["simulator","farm","collect","pet"],mechanics:["Bisa pelihara lebah","Kumpul madu dan bunga","Jelajah ladang"],desc:"Pelihara kawanan lebah, kumpulkan madu, dan kembangkan sarangmu.",link:"https://www.roblox.com/discover/?Keyword=Bee%20Swarm%20Simulator",color:["#facc15","#713f12"]},
+{id:"arm-wrestle",title:"Arm Wrestle Simulator",cat:"Simulasi",rating:89,playing:8900,tags:["simulator","strength","click"],mechanics:["Bisa adu panco","Latihan jadi semakin kuat","Lawan pemain lain"],desc:"Latihan otot, adu panco, dan jadi yang terkuat di server.",link:"https://www.roblox.com/discover/?Keyword=Arm%20Wrestle%20Simulator",color:["#fb923c","#7c2d12"]},
+{id:"muscle-legends",title:"Muscle Legends",cat:"Simulasi",rating:88,playing:6700,tags:["simulator","strength","gym"],mechanics:["Bisa latihan otot","Jadi besar dan kuat","Lawan pemain lain"],desc:"Gym simulator: angkat beban, jadi raksasa otot, dan tantang pemain lain.",link:"https://www.roblox.com/discover/?Keyword=Muscle%20Legends",color:["#a78bfa","#3b0764"]},
+{id:"restaurant-tycoon-2",title:"Restaurant Tycoon 2",cat:"Simulasi",rating:90,playing:5900,tags:["restaurant","tycoon","work","town","cooking"],mechanics:["Bisa membangun restoran","Masak dan layani pelanggan","Bangun restoran bareng teman"],desc:"Bangun dan kelola restoran impianmu dari nol sampai ramai.",link:"https://www.roblox.com/discover/?Keyword=Restaurant%20Tycoon%202",color:["#fb7185","#4c0519"]},
+{id:"retail-tycoon-2",title:"Retail Tycoon 2",cat:"Simulasi",rating:88,playing:2400,tags:["tycoon","shop","work","town","build"],mechanics:["Bisa membangun toko","Jual barang dan cari uang","Kelola toko sendiri"],desc:"Bangun toko retail, atur rak, dan layani pelanggan.",link:"https://www.roblox.com/discover/?Keyword=Retail%20Tycoon%202",color:["#34d399","#022c22"]},
+{id:"pizza-place",title:"Work at a Pizza Place",cat:"Simulasi",rating:89,playing:4300,tags:["work","restaurant","town","roleplay","cooking"],mechanics:["Bisa kerja di restoran pizza","Jadi kasir, koki, atau kurir","Beli rumah dan mobil dari gaji"],desc:"Kerja di restoran pizza bareng teman: masak, antar, dan kumpulkan gaji.",link:"https://www.roblox.com/discover/?Keyword=Work%20at%20a%20Pizza%20Place",color:["#f87171","#450a0a"]},
+{id:"steal-an-egg",title:"Steal an Egg",cat:"Simulasi",rating:87,playing:6800,tags:["steal","egg","thief","rob","hatch","collect"],mechanics:["Bisa mencuri telur dari sarang","Menetaskan telur jadi hewan","Lindungi telurmu dari pencuri"],desc:"Curi telur dari sarang pemain lain, tetaskan, dan kumpulkan hewan-hewan lucu.",link:"https://www.roblox.com/discover/?Keyword=Steal%20an%20Egg",color:["#fde047","#713f12"]},
+{id:"steal-a-brainrot",title:"Steal a Brainrot",cat:"Simulasi",rating:90,playing:51200,tags:["steal","thief","rob","collect","brainrot"],mechanics:["Bisa mencuri brainrot","Lindungi brainrot-mu","Kumpul karakter brainrot langka"],desc:"Fenomena brainrot: curi karakter dari pemain lain dan jaga koleksimu.",link:"https://www.roblox.com/discover/?Keyword=Steal%20a%20Brainrot",color:["#e879f9","#701a75"]},
+{id:"islands",title:"Islands",cat:"Simulasi",rating:89,playing:3100,tags:["island","farm","build","town","exploration"],mechanics:["Bisa membangun pulau sendiri","Berkebun dan beternak","Jelajah pulau teman"],desc:"Bangun pulaumu sendiri, berkebun, beternak, dan kunjungi pulau teman.",link:"https://www.roblox.com/discover/?Keyword=Islands",color:["#4ade80","#14532d"]},
+{id:"tower-of-hell",title:"Tower of Hell",cat:"Obby/Parkour",rating:91,playing:12600,tags:["obby","parkour","jump","tower","climb"],mechanics:["Bisa lompat parkour menara","Tantangan tanpa checkpoint","Balapan sampai puncak"],desc:"Menara parkour tanpa checkpoint yang legendaris — sampai puncak atau jatuh.",link:"https://www.roblox.com/discover/?Keyword=Tower%20of%20Hell",color:["#ef4444","#450a0a"]},
+{id:"obby-bike",title:"Obby But You're on a Bike",cat:"Obby/Parkour",rating:90,playing:18400,tags:["obby","parkour","jump","bike","climb"],mechanics:["Bisa lompat parkour naik sepeda","Naik sepeda lewati rintangan","Balapan sampai finish"],desc:"Obby yang dimainkan naik sepeda — seimbangkan dan lompat sampai finish.",link:"https://www.roblox.com/discover/?Keyword=Obby%20But%20You%27re%20on%20a%20Bike",color:["#22c55e","#052e16"]},
+{id:"floor-is-lava",title:"The Floor Is Lava",cat:"Obby/Parkour",rating:85,playing:1800,tags:["obby","parkour","jump","survival","lava"],mechanics:["Bisa lompat hindari lava","Parkour kabur dari lava","Bertahan bareng teman"],desc:"Lantai adalah lava! Lompat dari platform ke platform dan jangan sampai jatuh.",link:"https://www.roblox.com/discover/?Keyword=The%20Floor%20Is%20Lava",color:["#f97316","#431407"]},
+{id:"speed-run-4",title:"Speed Run 4",cat:"Obby/Parkour",rating:88,playing:3600,tags:["parkour","jump","obby","speed","run"],mechanics:["Bisa lompat parkour cepat","Balapan waktu tercepat","Lewati rintangan"],desc:"Parkour kecepatan: lari dan lompat secepat mungkin melewati rintangan.",link:"https://www.roblox.com/discover/?Keyword=Speed%20Run%204",color:["#38bdf8","#082f49"]},
+{id:"doors",title:"Doors",cat:"Horor",rating:94,playing:18700,tags:["horror","scary","ghost","escape","monster","survival"],mechanics:["Bisa kabur dari hotel berhantu","Hindari monster di tiap pintu","Main horor bareng teman"],desc:"Jelajahi hotel berhantu 100 pintu, hindari monster, dan selamat sampai akhir.",link:"https://www.roblox.com/discover/?Keyword=Doors",color:["#64748b","#020617"]},
+{id:"rainbow-friends",title:"Rainbow Friends",cat:"Horor",rating:90,playing:9200,tags:["horror","scary","monster","escape","survival"],mechanics:["Bisa kabur dari monster warna-warni","Kumpul barang sambil bersembunyi","Main horor bareng teman"],desc:"Kabur dari Rainbow Friends sambil mengumpulkan barang di taman bermain.",link:"https://www.roblox.com/discover/?Keyword=Rainbow%20Friends",color:["#f472b6","#500724"]},
+{id:"piggy",title:"Piggy",cat:"Horor",rating:92,playing:7400,tags:["horror","scary","escape","monster","survival"],mechanics:["Bisa kabur dari Piggy","Pecahkan teka-teki sambil kabur","Main horor bareng teman"],desc:"Horor teka-teki ikonik: kabur dari Piggy sambil memecahkan puzzle.",link:"https://www.roblox.com/discover/?Keyword=Piggy",color:["#fb923c","#431407"]},
+{id:"evade",title:"Evade",cat:"Horor",rating:91,playing:14200,tags:["horror","escape","parkour","jump","survival","meme"],mechanics:["Bisa kabur dari meme menakutkan","Parkour dan lompat sambil kabur","Main bareng teman"],desc:"Kabur dari meme-meme yang mengejarmu dengan parkour dan bunny hop.",link:"https://www.roblox.com/discover/?Keyword=Evade",color:["#a78bfa","#2e1065"]},
+{id:"dead-rails",title:"Dead Rails",cat:"Horor",rating:93,playing:28900,tags:["horror","survival","monster","escape","western"],mechanics:["Bisa kabur naik kereta di dunia zombie","Bertahan dari monster","Jelajah bareng teman"],desc:"Naik kereta melewati gurun penuh zombie dan monster, bertahan sejauh mungkin.",link:"https://www.roblox.com/discover/?Keyword=Dead%20Rails",color:["#78716c","#1c1917"]},
+{id:"the-mimic",title:"The Mimic",cat:"Horor",rating:91,playing:4100,tags:["horror","scary","ghost","monster","survival"],mechanics:["Bisa kabur dari hantu Jepang","Jelajahi cerita horor","Main horor bareng teman"],desc:"Horor cerita Jepang yang menyeramkan, dengan monster yang meniru dan mengejar.",link:"https://www.roblox.com/discover/?Keyword=The%20Mimic",color:["#dc2626","#450a0a"]},
+{id:"apeirophobia",title:"Apeirophobia",cat:"Horor",rating:90,playing:2800,tags:["horror","scary","escape","survival","backrooms"],mechanics:["Bisa kabur dari backrooms","Jelajahi level yang aneh","Main horor bareng teman"],desc:"Tersesat di backrooms tanpa akhir — jelajahi level demi level dan kabur.",link:"https://www.roblox.com/discover/?Keyword=Apeirophobia",color:["#eab308","#422006"]},
+{id:"brookhaven",title:"Brookhaven RP",cat:"Roleplay",rating:90,playing:32400,tags:["roleplay","town","house","swimming","pool","multiplayer","city"],mechanics:["Bisa berenang di kolam renang","Roleplay jadi siapa saja di kota","Punya rumah dan mobil"],desc:"Roleplay kota paling populer: jadi siapa saja, punya rumah, dan berenang di kolam.",link:"https://www.roblox.com/discover/?Keyword=Brookhaven%20RP",color:["#38bdf8","#082f49"]},
+{id:"livetopia",title:"Livetopia",cat:"Roleplay",rating:88,playing:5200,tags:["roleplay","town","house","multiplayer","city"],mechanics:["Bisa roleplay di kota","Punya rumah dan pekerjaan","Main bareng teman"],desc:"Kota roleplay dengan rumah, pekerjaan, dan aktivitas sehari-hari.",link:"https://www.roblox.com/discover/?Keyword=Livetopia",color:["#f472b6","#500724"]},
+{id:"berry-avenue",title:"Berry Avenue RP",cat:"Roleplay",rating:89,playing:11800,tags:["roleplay","town","house","multiplayer","city"],mechanics:["Bisa roleplay di kota","Kustomisasi avatar dan rumah","Main bareng teman"],desc:"Roleplay kota bergaya aesthetic dengan rumah dan avatar yang bisa dikustom.",link:"https://www.roblox.com/discover/?Keyword=Berry%20Avenue%20RP",color:["#c084fc","#581c87"]},
+{id:"adopt-me",title:"Adopt Me!",cat:"Roleplay",rating:90,playing:27400,tags:["pet","roleplay","town","house","animal","multiplayer"],mechanics:["Bisa pelihara hewan peliharaan","Roleplay jadi keluarga","Bangun rumah"],desc:"Adopsi dan rawat hewan peliharaan, bangun rumah, dan roleplay keluarga.",link:"https://www.roblox.com/discover/?Keyword=Adopt%20Me",color:["#fb7185","#4c0519"]},
+{id:"dress-to-impress",title:"Dress to Impress",cat:"Roleplay",rating:92,playing:23100,tags:["fashion","roleplay","multiplayer"],mechanics:["Bisa berdandan sesuai tema","Fashion show bareng pemain lain","Kumpul bintang dan menang"],desc:"Kompetisi fashion: dandani avatar sesuai tema dan menangkan runway.",link:"https://www.roblox.com/discover/?Keyword=Dress%20to%20Impress",color:["#e879f9","#701a75"]},
+{id:"royale-high",title:"Royale High",cat:"Roleplay",rating:91,playing:9600,tags:["roleplay","school","fashion","multiplayer"],mechanics:["Bisa roleplay sekolah peri","Kumpul berlian dan aksesoris","Main bareng teman"],desc:"Sekolah peri yang cantik: kelas, fashion, dan petualangan bareng teman.",link:"https://www.roblox.com/discover/?Keyword=Royale%20High",color:["#f0abfc","#701a75"]},
+{id:"blade-ball",title:"Blade Ball",cat:"Action/PVP",rating:92,playing:21300,tags:["fighting","sword","combat","pvp","battle"],mechanics:["Bisa berantem pakai pedang","Tangkis bola dan lawan pemain","Naik level dan buka skill"],desc:"Duel pedang serba cepat: tangkis bola mematikan dan jadi yang terakhir bertahan.",link:"https://www.roblox.com/discover/?Keyword=Blade%20Ball",color:["#ef4444","#450a0a"]},
+{id:"bedwars",title:"BedWars",cat:"Action/PVP",rating:91,playing:16800,tags:["fighting","combat","pvp","battle","build"],mechanics:["Bisa berantem lawan tim lain","Lindungi kasur tim","Bangun pertahanan dan serang"],desc:"Lindungi kasur timmu, hancurkan kasur lawan, dan jadi tim terakhir.",link:"https://www.roblox.com/discover/?Keyword=BedWars",color:["#3b82f6","#172554"]},
+{id:"murder-mystery-2",title:"Murder Mystery 2",cat:"Action/PVP",rating:90,playing:19400,tags:["shooter","gun","pvp","mystery","battle"],mechanics:["Bisa tembak-tembakan jadi sheriff","Jadi murderer atau innocent","Kumpul pisau dan senjata langka"],desc:"Jadi innocent, sheriff, atau murderer — tebak, sembunyi, dan selamat.",link:"https://www.roblox.com/discover/?Keyword=Murder%20Mystery%202",color:["#a855f7","#3b0764"]},
+{id:"arsenal",title:"Arsenal",cat:"Action/PVP",rating:90,playing:8900,tags:["shooter","gun","combat","pvp","war","battle"],mechanics:["Bisa tembak-tembakan","Ganti senjata tiap kill","Main bareng teman"],desc:"FPS serba cepat: tiap kill ganti senjata sampai jadi yang pertama mencapai akhir.",link:"https://www.roblox.com/discover/?Keyword=Arsenal",color:["#f97316","#431407"]},
+{id:"rivals",title:"Rivals",cat:"Action/PVP",rating:93,playing:24700,tags:["shooter","gun","combat","pvp","battle"],mechanics:["Bisa tembak-tembakan duel 1v1","Pilih senjata dan map","Duel bareng teman"],desc:"Duel tembak-tembakan 1v1 sampai 5v5 dengan senjata dan map yang bisa dipilih.",link:"https://www.roblox.com/discover/?Keyword=Rivals",color:["#22d3ee","#164e63"]},
+{id:"combat-warriors",title:"Combat Warriors",cat:"Action/PVP",rating:91,playing:12300,tags:["fighting","sword","combat","pvp","battle","blood"],mechanics:["Bisa berantem pakai pedang dan senjata","Parry dan kombo","Main bareng teman"],desc:"Pertarungan brutal dengan pedang, parry, dan kombo mematikan.",link:"https://www.roblox.com/discover/?Keyword=Combat%20Warriors",color:["#dc2626","#450a0a"]},
+{id:"strongest-battlegrounds",title:"The Strongest Battlegrounds",cat:"Action/PVP",rating:93,playing:31800,tags:["fighting","combat","pvp","battle","anime"],mechanics:["Bisa berantem pakai jurus anime","Kombo dan ultimate","Lawan pemain lain di arena"],desc:"Battlegrounds anime dengan jurus-jurus dahsyat dan kombo mematikan.",link:"https://www.roblox.com/discover/?Keyword=The%20Strongest%20Battlegrounds",color:["#facc15","#713f12"]},
+{id:"blox-fruits",title:"Blox Fruits",cat:"Action/PVP",rating:94,playing:41200,tags:["fighting","combat","sea","boat","island","exploration","sword"],mechanics:["Bisa berlayar pakai kapal ke pulau baru","Bertarung pakai buah dan pedang","Naik level dan jadi bajak laut terkuat"],desc:"Jadi bajak laut atau marinir: makan buah, berlayar antar pulau, dan bertarung.",link:"https://www.roblox.com/games/2753915549/Blox-Fruits",color:["#84cc16","#1a2e05"]},
+{id:"jailbreak",title:"Jailbreak",cat:"Action/PVP",rating:91,playing:13800,tags:["escape","police","rob","thief","car","driving","prison"],mechanics:["Bisa kabur dari penjara","Rampok bank dan toko","Jadi polisi atau penjahat"],desc:"Kabur dari penjara, rampok, dan kabur naik mobil — atau jadi polisi yang menangkap.",link:"https://www.roblox.com/discover/?Keyword=Jailbreak",color:["#64748b","#020617"]},
+{id:"natural-disaster",title:"Natural Disaster Survival",cat:"Action/PVP",rating:88,playing:6900,tags:["survival","escape","disaster"],mechanics:["Bisa bertahan dari bencana alam","Kabur dari gempa, tsunami, dan meteor","Main bareng teman"],desc:"Bertahan dari bencana alam acak di tiap ronde — gempa, banjir, sampai meteor.",link:"https://www.roblox.com/discover/?Keyword=Natural%20Disaster%20Survival",color:["#14b8a6","#042f2e"]}
+];
+console.log("RoFind database:", GAMES.length, "game");
+
+/* ============ SCORING (Multi-Field Fuzzy) ============ */
+function scoreGame(g, tokens, expanded){
+  if(!tokens.length) return 1;
+  let score = 0;
+  const title = g.title.toLowerCase();
+  const desc = g.desc.toLowerCase();
+  const mech = g.mechanics.join(" ").toLowerCase();
+  const tags = g.tags.join(" ");
+  const cat = g.cat.toLowerCase();
+  tokens.forEach(tok=>{
+    if(title.includes(tok)) score += 50;
+    if(tags.includes(tok)) score += 30;
+    if(mech.includes(tok)) score += 25;
+    if(desc.includes(tok)) score += 15;
+    if(cat.includes(tok)) score += 10;
+    // fuzzy: kata yang diawali token yang sama (mis. "balap" ~ "balapan")
+    if(tok.length >= 4){
+      tags.split(" ").forEach(w=>{ if(w.startsWith(tok) || tok.startsWith(w)) score += 8; });
+      title.split(" ").forEach(w=>{ if(w.startsWith(tok)) score += 8; });
+    }
+  });
+  expanded.forEach(tag=>{
+    if(tags.includes(tag)) score += 20;
+    if(title.includes(tag)) score += 25;
+    if(mech.includes(tag)) score += 10;
+  });
+  return score;
+}
+function searchGames(query){
+  const tokens = tokenize(query);
+  const expanded = expandTokens(tokens);
+  if(!tokens.length) return GAMES.map(g=>({...g, _score:1}));
+  return GAMES.map(g=>({...g, _score: scoreGame(g, tokens, expanded)}))
+              .filter(g=>g._score > 0)
+              .sort((a,b)=>b._score - a._score);
+}
+
+/* ============ STATE (localStorage) ============ */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+let favs = new Set(store.get("rofind_favs", []));
+let history = store.get("rofind_history", []);
+let currentCat = "Semua";
+let favOnly = false;
+let lastResults = GAMES.map(g=>({...g, _score:1}));
+
+const CATS = ["Semua","Balapan","Air & Eksplorasi","Simulasi","Obby/Parkour","Horor","Roleplay","Action/PVP"];
+const ACCENTS = [
+  {name:"Neon Purple", c:"#8b5cf6"}, {name:"Cyber Blue", c:"#38bdf8"},
+  {name:"Emerald Green", c:"#10b981"}, {name:"Crimson Red", c:"#ef4444"},
+  {name:"Sunset Orange", c:"#f97316"}
+];
+function applyTheme(){
+  const t = store.get("rofind_theme", "dark");
+  document.documentElement.setAttribute("data-theme", t);
+  document.querySelectorAll("#themeBtns .chip").forEach(b=>{
+    b.classList.toggle("active", b.dataset.theme === t);
+  });
+}
+function applyAccent(){
+  const c = store.get("rofind_accent", "#8b5cf6");
+  document.documentElement.style.setProperty("--accent", c);
+  document.documentElement.style.setProperty("--glow", c + "66");
+  const cc = document.getElementById("customColor");
+  if(cc) cc.value = /^#[0-9a-fA-F]{6}$/.test(c) ? c : "#8b5cf6";
+  document.querySelectorAll(".swatch").forEach(s=>{
+    s.classList.toggle("active", s.dataset.color === c);
+  });
+}
+function fmtPlaying(n){
+  return n >= 1000 ? (n/1000).toFixed(1).replace(/\.0$/,"") + "K" : String(n);
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ============ RENDER ============ */
+function renderCatFilters(){
+  document.getElementById("catFilters").innerHTML = CATS.map(c=>
+    `<button class="chip ${c===currentCat?"active":""}" data-cat="${c}">${c}</button>`).join("");
+  document.querySelectorAll("#catFilters .chip").forEach(b=>{
+    b.onclick = ()=>{ currentCat = b.dataset.cat; favOnly = false; renderCatFilters(); runSearch(false); };
+  });
+}
+function cardHtml(g){
+  const fav = favs.has(g.id) ? "❤️" : "🤍";
+  const cover = `background:linear-gradient(135deg, ${g.color[0]}, ${g.color[1]});`;
+  return `<article class="card" data-id="${g.id}">
+    <div class="cover" style="${cover}">
+      <span class="cat">${escapeHtml(g.cat)}</span>
+      <span class="rate">👍 ${g.rating}%</span>
+      <div class="bigt">${escapeHtml(g.title)}</div>
+    </div>
+    <div class="cardbody">
+      <h3>${escapeHtml(g.title)}</h3>
+      <div class="meta">🔥 ${fmtPlaying(g.playing)} Playing &nbsp;•&nbsp; ${escapeHtml(g.cat)}</div>
+      <div class="mech">${g.mechanics.slice(0,3).map(m=>`<span>${escapeHtml(m)}</span>`).join("")}</div>
+      <div class="actions">
+        <a class="btn primary" href="${g.link}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Mainkan di Roblox</a>
+        <button class="btn" data-act="detail" data-id="${g.id}">Detail</button>
+        <button class="btn favbtn" data-act="fav" data-id="${g.id}">${fav}</button>
+      </div>
+    </div>
+  </article>`;
+}
+function applySort(list){
+  const s = document.getElementById("sortSel").value;
+  const out = [...list];
+  if(s === "populer") out.sort((a,b)=>b.playing - a.playing);
+  else if(s === "rating") out.sort((a,b)=>b.rating - a.rating);
+  else out.sort((a,b)=>(b._score||0) - (a._score||0) || b.playing - a.playing);
+  return out;
+}
+function renderResults(list, query){
+  const grid = document.getElementById("grid");
+  const empty = document.getElementById("empty");
+  let filtered = list;
+  if(currentCat !== "Semua") filtered = filtered.filter(g=>g.cat === currentCat);
+  if(favOnly) filtered = filtered.filter(g=>favs.has(g.id));
+  filtered = applySort(filtered);
+  lastResults = filtered;
+  document.getElementById("status").textContent =
+    (query ? `Hasil untuk "${query}" — ` : "") +
+    (favOnly ? "Favorit saya — " : "") +
+    `${filtered.length} map ditemukan` +
+    (currentCat !== "Semua" ? ` • kategori ${currentCat}` : "");
+  if(!filtered.length){
+    grid.innerHTML = "";
+    empty.style.display = "block";
+    const rec = applySort(GAMES.map(g=>({...g,_score:1}))).slice(0,6);
+    empty.innerHTML = `<div style="font-size:48px">🔍</div><h2>Belum ketemu map yang cocok</h2>
+      <p style="color:var(--muted)">Coba kata lain, misal <b>balapan</b>, <b>berenang</b>, atau <b>mencuri telur</b>. Sementara itu, ini map terpopuler yang mungkin kamu suka:</p>
+      <div class="grid" style="margin-top:20px">${rec.map(cardHtml).join("")}</div>`;
+    bindCards(empty);
+    return;
+  }
+  empty.style.display = "none";
+  grid.innerHTML = filtered.map(cardHtml).join("");
+  bindCards(grid);
+}
+function bindCards(root){
+  root.querySelectorAll(".card").forEach(card=>{
+    card.onclick = (e)=>{
+      if(e.target.closest("a,button")) return;
+      openDetail(card.dataset.id);
+    };
+  });
+  root.querySelectorAll('[data-act="detail"]').forEach(b=>{
+    b.onclick = (e)=>{ e.stopPropagation(); openDetail(b.dataset.id); };
+  });
+  root.querySelectorAll('[data-act="fav"]').forEach(b=>{
+    b.onclick = (e)=>{ e.stopPropagation(); toggleFav(b.dataset.id); };
+  });
+}
+function toggleFav(id){
+  if(favs.has(id)) favs.delete(id); else favs.add(id);
+  store.set("rofind_favs", [...favs]);
+  runSearch(false);
+}
+function showSkeleton(){
+  document.getElementById("grid").innerHTML =
+    Array(6).fill('<div class="skeleton"></div>').join("");
+  document.getElementById("empty").style.display = "none";
+}
+
+/* ============ SEARCH FLOW ============ */
+let searchTimer = null;
+function runSearch(saveHist){
+  const q = document.getElementById("q").value.trim();
+  document.getElementById("clearBtn").style.display = q ? "block" : "none";
+  showSkeleton();
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=>{
+    const results = searchGames(q);
+    if(saveHist && q && !history.some(h=>h.q === q)){
+      history.unshift({q, time: new Date().toLocaleString("id-ID")});
+      history = history.slice(0, 30);
+      store.set("rofind_history", history);
+    }
+    renderResults(results, q);
+  }, 350);
+}
+
+/* ============ DETAIL MODAL ============ */
+function openDetail(id){
+  const g = GAMES.find(x=>x.id === id);
+  if(!g) return;
+  document.getElementById("detailBox").innerHTML = `
+    <div class="cover" style="border-radius:14px;background:linear-gradient(135deg, ${g.color[0]}, ${g.color[1]});">
+      <span class="cat">${escapeHtml(g.cat)}</span><span class="rate">👍 ${g.rating}%</span>
+      <div class="bigt">${escapeHtml(g.title)}</div>
+    </div>
+    <p style="color:var(--muted);line-height:1.7;margin:16px 0">${escapeHtml(g.desc)}</p>
+    <p><b>Yang bisa dilakukan di map ini:</b></p>
+    <div class="mech">${g.mechanics.map(m=>`<span>${escapeHtml(m)}</span>`).join("")}</div>
+    <p><b>Tag:</b> ${g.tags.map(t=>`<span style="color:var(--accent)">${escapeHtml(t)}</span>`).join(", ")}</p>
+    <p class="meta">🔥 ${fmtPlaying(g.playing)} Playing &nbsp;•&nbsp; 👍 ${g.rating}% &nbsp;•&nbsp; ${escapeHtml(g.cat)}</p>
+    <div class="actions" style="margin-top:16px">
+      <a class="btn primary" href="${g.link}" target="_blank" rel="noopener">Mainkan di Roblox</a>
+      <button class="btn" id="copyLinkBtn">Copy Link</button>
+      <button class="btn" id="closeDetail">Tutup</button>
+    </div>`;
+  document.getElementById("detailBg").classList.add("open");
+  document.getElementById("closeDetail").onclick = ()=>document.getElementById("detailBg").classList.remove("open");
+  document.getElementById("copyLinkBtn").onclick = async ()=>{
+    try{ await navigator.clipboard.writeText(g.link); alert("Link tersalin!"); }
+    catch(e){ prompt("Salin link ini:", g.link); }
+  };
+}
+document.getElementById("detailBg").addEventListener("click", e=>{
+  if(e.target.id === "detailBg") e.target.classList.remove("open");
+});
+
+/* ============ HISTORY DRAWER ============ */
+function renderHistory(){
+  const el = document.getElementById("histList");
+  if(!history.length){ el.innerHTML = "<p style='color:var(--muted)'>Belum ada riwayat pencarian.</p>"; return; }
+  el.innerHTML = history.map((h,i)=>`
+    <div class="histitem">
+      <button style="text-align:left;flex:1" data-hist="${i}">🔍 ${escapeHtml(h.q)}<br><small style="color:var(--muted)">${escapeHtml(h.time)}</small></button>
+      <button data-del="${i}" title="Hapus">✕</button>
+    </div>`).join("");
+  el.querySelectorAll("[data-hist]").forEach(b=>{
+    b.onclick = ()=>{
+      document.getElementById("q").value = history[+b.dataset.hist].q;
+      document.getElementById("drawer").classList.remove("open");
+      runSearch(false);
+    };
+  });
+  el.querySelectorAll("[data-del]").forEach(b=>{
+    b.onclick = ()=>{ history.splice(+b.dataset.del, 1); store.set("rofind_history", history); renderHistory(); };
+  });
+}
+
+/* ============ EVENTS ============ */
+document.getElementById("q").addEventListener("input", ()=>runSearch(false));
+document.getElementById("q").addEventListener("keydown", e=>{
+  if(e.key === "Enter") runSearch(true);
+});
+document.getElementById("clearBtn").onclick = ()=>{
+  document.getElementById("q").value = ""; runSearch(false);
+};
+document.querySelectorAll("#quickChips .chip").forEach(c=>{
+  c.onclick = ()=>{ document.getElementById("q").value = c.dataset.q; runSearch(true); };
+});
+document.getElementById("sortSel").onchange = ()=>runSearch(false);
+document.getElementById("tabAll").onclick = ()=>{ favOnly = false; renderCatFilters(); runSearch(false); };
+document.getElementById("tabFav").onclick = ()=>{ favOnly = true; runSearch(false); };
+document.getElementById("randomBtn").onclick = ()=>{
+  const pool = (currentCat !== "Semua" ? GAMES.filter(g=>g.cat === currentCat) : GAMES);
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  openDetail(pick.id);
+};
+document.getElementById("histBtn").onclick = ()=>{ renderHistory(); document.getElementById("drawer").classList.add("open"); };
+document.getElementById("closeDrawer").onclick = ()=>document.getElementById("drawer").classList.remove("open");
+document.getElementById("clearHist").onclick = ()=>{ history = []; store.set("rofind_history", history); renderHistory(); };
+document.getElementById("setBtn").onclick = ()=>document.getElementById("setBg").classList.add("open");
+document.getElementById("closeSet").onclick = ()=>document.getElementById("setBg").classList.remove("open");
+document.getElementById("setBg").addEventListener("click", e=>{
+  if(e.target.id === "setBg") e.target.classList.remove("open");
+});
+document.querySelectorAll("#themeBtns .chip").forEach(b=>{
+  b.onclick = ()=>{ store.set("rofind_theme", b.dataset.theme); applyTheme(); };
+});
+document.getElementById("swatches").innerHTML = ACCENTS.map(a=>
+  `<div class="swatch" title="${a.name}" data-color="${a.c}" style="background:${a.c}"></div>`).join("");
+document.querySelectorAll(".swatch").forEach(s=>{
+  s.onclick = ()=>{ store.set("rofind_accent", s.dataset.color); applyAccent(); };
+});
+document.getElementById("customColor").oninput = (e)=>{
+  store.set("rofind_accent", e.target.value); applyAccent();
+};
+
+/* ============ INIT ============ */
+applyTheme();
+applyAccent();
+renderCatFilters();
+runSearch(false);
+</script>
+</body>
+</html>
