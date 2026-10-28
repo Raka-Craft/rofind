@@ -46,7 +46,11 @@ select{border:1px solid var(--border);background:var(--card);color:var(--text);p
 .grid{max-width:1200px;margin:16px auto 40px;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
 .card:hover{transform:translateY(-5px);box-shadow:0 16px 36px rgba(0,0,0,.35);border-color:var(--accent)}
-.cover{aspect-ratio:16/9;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;position:relative}
+.cover{aspect-ratio:16/9;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;position:relative;overflow:hidden}
+.cover img.coverimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cover svg.coversvg{position:absolute;inset:0;width:100%;height:100%}
+.cover .shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.65),rgba(0,0,0,0) 60%)}
+.cover .cat,.cover .rate,.cover .bigt{position:relative;z-index:2}
 .cover .cat{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700}
 .cover .rate{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700}
 .cover .bigt{font-size:clamp(22px,3vw,30px);font-weight:900;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,.5)}
@@ -81,10 +85,7 @@ footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 <div class="topbar">
   <div class="logo">RO<span>FIND</span></div>
   <div class="topbtns">
-    <button class="btn" id="tabAll">Semua Map</button>
-    <button class="btn" id="tabFav">❤️ Favorit Saya</button>
-    <button class="btn" id="histBtn">🕘 Riwayat</button>
-    <button class="btn" id="setBtn">⚙️ Pengaturan</button>
+    <button class="btn" id="menuBtn" aria-label="Buka menu">☰ Menu</button>
   </div>
 </div>
 
@@ -142,9 +143,15 @@ footer{max-width:1200px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 </div></div>
 
 <div class="drawer" id="drawer">
+  <h2>☰ Menu</h2>
+  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px">
+    <button class="btn" id="tabAll" style="text-align:left">🗺️ Semua Map</button>
+    <button class="btn" id="tabFav" style="text-align:left">❤️ Favorit Saya</button>
+    <button class="btn" id="setBtn" style="text-align:left">⚙️ Pengaturan</button>
+  </div>
   <h2>🕘 Riwayat Pencarian</h2>
   <div id="histList"></div>
-  <div style="margin-top:16px;display:flex;gap:8px">
+  <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
     <button class="btn" id="clearHist">Hapus Semua Riwayat</button>
     <button class="btn primary" id="closeDrawer">Tutup</button>
   </div>
@@ -381,15 +388,30 @@ function renderCatFilters(){
     b.onclick = ()=>{ currentCat = b.dataset.cat; favOnly = false; renderCatFilters(); runSearch(false); };
   });
 }
-function cardHtml(g){
-  const fav = favs.has(g.id) ? "❤️" : "🤍";
-  const cover = `background:linear-gradient(135deg, ${g.color[0]}, ${g.color[1]});`;
-  return `<article class="card" data-id="${g.id}">
-    <div class="cover" style="${cover}">
+
+const COVER_IMG = {"Balapan":"images/racing.jpg","Air & Eksplorasi":"images/water.jpg","Horor":"images/horror.jpg","Action/PVP":"images/action.jpg"};
+const COVER_SVG = {
+"Simulasi": `<svg class="coversvg" viewBox="0 0 400 225" preserveAspectRatio="xMidYMid slice"><rect width="400" height="225" fill="#16a34a"/><rect y="150" width="400" height="75" fill="#15803d"/><circle cx="330" cy="45" r="28" fill="#fde047"/><ellipse cx="120" cy="110" rx="55" ry="38" fill="#fef3c7"/><ellipse cx="120" cy="110" rx="55" ry="38" fill="none" stroke="#f59e0b" stroke-width="4"/><circle cx="250" cy="170" r="14" fill="#facc15" stroke="#a16207" stroke-width="3"/><circle cx="285" cy="180" r="14" fill="#facc15" stroke="#a16207" stroke-width="3"/><rect x="30" y="120" width="70" height="30" fill="#92400e"/><rect x="45" y="95" width="40" height="30" fill="#22c55e"/></svg>`,
+"Obby/Parkour": `<svg class="coversvg" viewBox="0 0 400 225" preserveAspectRatio="xMidYMid slice"><rect width="400" height="225" fill="#38bdf8"/><rect x="60" y="170" width="80" height="30" fill="#ef4444"/><rect x="150" y="130" width="80" height="30" fill="#f97316"/><rect x="240" y="90" width="80" height="30" fill="#eab308"/><rect x="40" y="200" width="320" height="25" fill="#1e293b"/><rect x="255" y="55" width="28" height="28" fill="#facc15" stroke="#111827" stroke-width="3"/><path d="M 255 55 L 300 40" stroke="#111827" stroke-width="3"/></svg>`,
+"Roleplay": `<svg class="coversvg" viewBox="0 0 400 225" preserveAspectRatio="xMidYMid slice"><rect width="400" height="225" fill="#7dd3fc"/><circle cx="340" cy="40" r="26" fill="#fde047"/><rect y="170" width="400" height="55" fill="#4ade80"/><rect x="40" y="90" width="110" height="80" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/><polygon points="35,90 95,45 155,90" fill="#ef4444"/><rect x="85" y="130" width="25" height="40" fill="#92400e"/><rect x="230" y="110" width="90" height="60" fill="#fde68a" stroke="#94a3b8" stroke-width="3"/><polygon points="225,110 275,70 325,110" fill="#38bdf8"/></svg>`
+};
+function coverHtml(g){
+  const img = COVER_IMG[g.cat];
+  const visual = img
+    ? `<img class="coverimg" src="${img}" alt="" onerror="this.style.display='none'">`
+    : (COVER_SVG[g.cat] || "");
+  return `<div class="cover" style="background:linear-gradient(135deg, ${g.color[0]}, ${g.color[1]});">
+      ${visual}<div class="shade"></div>
       <span class="cat">${escapeHtml(g.cat)}</span>
       <span class="rate">👍 ${g.rating}%</span>
       <div class="bigt">${escapeHtml(g.title)}</div>
-    </div>
+    </div>`;
+}
+
+function cardHtml(g){
+  const fav = favs.has(g.id) ? "❤️" : "🤍";
+  return `<article class="card" data-id="${g.id}">
+    ${coverHtml(g)}
     <div class="cardbody">
       <h3>${escapeHtml(g.title)}</h3>
       <div class="meta">🔥 ${fmtPlaying(g.playing)} Playing &nbsp;•&nbsp; ${escapeHtml(g.cat)}</div>
@@ -485,10 +507,7 @@ function openDetail(id){
   const g = GAMES.find(x=>x.id === id);
   if(!g) return;
   document.getElementById("detailBox").innerHTML = `
-    <div class="cover" style="border-radius:14px;background:linear-gradient(135deg, ${g.color[0]}, ${g.color[1]});">
-      <span class="cat">${escapeHtml(g.cat)}</span><span class="rate">👍 ${g.rating}%</span>
-      <div class="bigt">${escapeHtml(g.title)}</div>
-    </div>
+    <div style="border-radius:14px;overflow:hidden">${coverHtml(g)}</div>
     <p style="color:var(--muted);line-height:1.7;margin:16px 0">${escapeHtml(g.desc)}</p>
     <p><b>Yang bisa dilakukan di map ini:</b></p>
     <div class="mech">${g.mechanics.map(m=>`<span>${escapeHtml(m)}</span>`).join("")}</div>
@@ -543,17 +562,17 @@ document.querySelectorAll("#quickChips .chip").forEach(c=>{
   c.onclick = ()=>{ document.getElementById("q").value = c.dataset.q; runSearch(true); };
 });
 document.getElementById("sortSel").onchange = ()=>runSearch(false);
-document.getElementById("tabAll").onclick = ()=>{ favOnly = false; renderCatFilters(); runSearch(false); };
-document.getElementById("tabFav").onclick = ()=>{ favOnly = true; runSearch(false); };
+document.getElementById("tabAll").onclick = ()=>{ favOnly = false; document.getElementById("drawer").classList.remove("open"); renderCatFilters(); runSearch(false); };
+document.getElementById("tabFav").onclick = ()=>{ favOnly = true; document.getElementById("drawer").classList.remove("open"); runSearch(false); };
 document.getElementById("randomBtn").onclick = ()=>{
   const pool = (currentCat !== "Semua" ? GAMES.filter(g=>g.cat === currentCat) : GAMES);
   const pick = pool[Math.floor(Math.random() * pool.length)];
   openDetail(pick.id);
 };
-document.getElementById("histBtn").onclick = ()=>{ renderHistory(); document.getElementById("drawer").classList.add("open"); };
+document.getElementById("menuBtn").onclick = ()=>{ renderHistory(); document.getElementById("drawer").classList.add("open"); };
 document.getElementById("closeDrawer").onclick = ()=>document.getElementById("drawer").classList.remove("open");
 document.getElementById("clearHist").onclick = ()=>{ history = []; store.set("rofind_history", history); renderHistory(); };
-document.getElementById("setBtn").onclick = ()=>document.getElementById("setBg").classList.add("open");
+document.getElementById("setBtn").onclick = ()=>{ document.getElementById("drawer").classList.remove("open"); document.getElementById("setBg").classList.add("open"); };
 document.getElementById("closeSet").onclick = ()=>document.getElementById("setBg").classList.remove("open");
 document.getElementById("setBg").addEventListener("click", e=>{
   if(e.target.id === "setBg") e.target.classList.remove("open");
