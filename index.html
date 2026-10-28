@@ -446,6 +446,7 @@ async function loadThumbs(list){
   try{
     const uni = {};
     for(const g of need){
+      if(g.universeId){ uni[g.universeId] = g.place; continue; }
       try{
         const r = await fetch("https://apis.roblox.com/universes/v1/places/" + g.place + "/universe");
         const j = await r.json();
@@ -469,11 +470,68 @@ function applyThumbs(){
   });
 }
 
+
+function parsePlayingStr(v){
+  if(!v) return 0;
+  const m = String(v).trim().match(/^([\d.]+)([KM]?)$/);
+  if(!m) return 0;
+  let n = parseFloat(m[1]);
+  if(m[2] === "K") n *= 1000;
+  if(m[2] === "M") n *= 1000000;
+  return Math.round(n);
+}
+let liveQuery = "";
+let liveBase = [];
+function onLiveResults(query, results){
+  if(query !== liveQuery) return;
+  const seen = new Set(liveBase.map(g=>g.place));
+  const fresh = [];
+  (results || []).forEach(r=>{
+    const place = Number(r.placeId);
+    if(!place || seen.has(place)) return;
+    seen.add(place);
+    fresh.push({
+      id: "live-" + place, title: r.title || "Game Roblox", cat: "Live", live: true,
+      rating: r.like || 0, playing: parsePlayingStr(r.playingStr),
+      tags: [], mechanics: ["Ditemukan lewat pencarian live Roblox"],
+      desc: "Game ini ditemukan lewat pencarian live di Roblox.",
+      link: "https://www.roblox.com/games/" + place,
+      color: ["#38bdf8", "#1e3a8a"], place: place, universeId: r.universeId ? Number(r.universeId) : null,
+      thumbUrl: null, _score: 90
+    });
+  });
+  if(!fresh.length) return;
+  const merged = [...liveBase, ...fresh];
+  liveBase = merged;
+  // Tampilkan gabungan lokal + live, dengan foto live dimuat seperti biasa
+  const all = merged;
+  // Simpan sebagai hasil terakhir lalu render ulang tanpa memicu pencarian live lagi
+  lastResults = all;
+  renderResultsSilent(all);
+}
+function renderResultsSilent(list){
+  const grid = document.getElementById("grid");
+  const empty = document.getElementById("empty");
+  let filtered = list;
+  if(currentCat !== "Semua") filtered = filtered.filter(g=>g.cat === currentCat || g.live);
+  if(favOnly) filtered = filtered.filter(g=>favs.has(g.id));
+  filtered = applySort(filtered);
+  document.getElementById("status").textContent =
+    `Hasil untuk "${document.getElementById("q").value.trim()}" — ${filtered.length} map ditemukan` +
+    (filtered.some(g=>g.live) ? " (termasuk hasil live dari Roblox)" : "") +
+    (currentCat !== "Semua" ? ` • kategori ${currentCat}` : "");
+  if(!filtered.length){ grid.innerHTML = ""; return; }
+  empty.style.display = "none";
+  grid.innerHTML = filtered.map(cardHtml).join("");
+  bindCards(grid);
+  loadThumbs(filtered);
+}
+
 function renderResults(list, query){
   const grid = document.getElementById("grid");
   const empty = document.getElementById("empty");
   let filtered = list;
-  if(currentCat !== "Semua") filtered = filtered.filter(g=>g.cat === currentCat);
+  if(currentCat !== "Semua") filtered = filtered.filter(g=>g.cat === currentCat || g.live);
   if(favOnly) filtered = filtered.filter(g=>favs.has(g.id));
   filtered = applySort(filtered);
   lastResults = filtered;
@@ -537,7 +595,13 @@ function runSearch(saveHist){
       history = history.slice(0, 30);
       store.set("rofind_history", history);
     }
+    liveBase = results;
     renderResults(results, q);
+    if(saveHist && q && window.RoFindBridge && window.RoFindBridge.searchLive){
+      liveQuery = q;
+      document.getElementById("status").textContent += " • Mencari live di Roblox...";
+      try{ window.RoFindBridge.searchLive(q); }catch(e){}
+    }
   }, 350);
 }
 
