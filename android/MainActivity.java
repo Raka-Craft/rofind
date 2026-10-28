@@ -60,9 +60,9 @@ public class MainActivity extends Activity {
             "for(var i=0;i<tiles.length;i++){var a=tiles[i];var u;try{u=new URL(a.href);}catch(e){continue;}" +
             "var place=u.searchParams.get('placeId')||u.pathname.split('/')[2];" +
             "if(!place||seen[place])continue;seen[place]=1;" +
-            "var img=a.querySelector('img');var title=img&&img.alt?img.alt:a.textContent.trim();" +
+            "var img=a.querySelector('img');var title=img&&img.alt?img.alt:a.textContent.trim();var imgSrc=img?img.src:null;" +
             "var txt=a.textContent||'';var m=txt.match(/(\\d+)%\\s*([\\d.]+[KM]?)/);" +
-            "out.push({title:title,placeId:place,universeId:u.searchParams.get('universeId')||null," +
+            "out.push({title:title,placeId:place,universeId:u.searchParams.get('universeId')||null,imgSrc:imgSrc," +
             "like:m?parseInt(m[1],10):null,playingStr:m?m[2]:null});}" +
             "return out;}catch(e){return [];}})()";
         scraper.evaluateJavascript(js, new android.webkit.ValueCallback<String>() {
