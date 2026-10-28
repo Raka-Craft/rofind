@@ -22,6 +22,8 @@ public class MainActivity extends Activity {
         s.setDomStorageEnabled(true);
         s.setDatabaseEnabled(true);
         s.setAllowFileAccess(true);
+        s.setAllowFileAccessFromFileURLs(true);
+        s.setAllowUniversalAccessFromFileURLs(true);
         s.setLoadsImagesAutomatically(true);
         s.setUseWideViewPort(true);
         s.setLoadWithOverviewMode(true);
