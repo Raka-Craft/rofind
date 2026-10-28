@@ -232,7 +232,13 @@ const SYNONYMS = {
   "jurassic":["dinosaur","jurassic"],
   "hidup":["survival","life"],
   "zombie":["zombie","survival"],
-  "anime":["anime"]
+  "anime":["anime"],
+  "petualangan":["adventure","exploration"],
+  "pertualangan":["adventure","exploration"],
+  "petualang":["adventure","exploration"],
+  "bertualang":["adventure","exploration"],
+  "eksplorasi":["exploration","adventure"],
+  "jelajah":["exploration","adventure"]
 };
 const STOPWORDS = new Set(["game","games","map","yang","bisa","ada","tempat","untuk","di","roblox","aku","saya","mau","cari","carikan","tolong","dong","sih","aja","main","mainkan","bermain","sama","dengan","dan","atau","dari","ke","ini","itu","seperti","kayak","yangbisa","ingin","pengen","lagi","sangat","paling","cariin","aplikasi","hal","nya","si","kok"]);
 function tokenize(text){
@@ -328,6 +334,18 @@ const GAMES = [
 console.log("RoFind database:", GAMES.length, "game");
 
 /* ============ SCORING (Multi-Field Fuzzy) ============ */
+function lev(a,b){
+  if(a===b) return 0;
+  const m=a.length, n=b.length;
+  if(!m) return n; if(!n) return m;
+  let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){
+    let cur=[i];
+    for(let j=1;j<=n;j++){ cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1)); }
+    prev=cur;
+  }
+  return prev[n];
+}
 function scoreGame(g, tokens, expanded){
   if(!tokens.length) return 1;
   let score = 0;
@@ -346,6 +364,12 @@ function scoreGame(g, tokens, expanded){
     if(tok.length >= 4){
       tags.split(" ").forEach(w=>{ if(w.startsWith(tok) || tok.startsWith(w)) score += 8; });
       title.split(" ").forEach(w=>{ if(w.startsWith(tok)) score += 8; });
+    }
+    // toleransi typo: "pertualangan" tetap ketemu "petualangan"/"adventure" (jarak edit <= 2)
+    if(tok.length >= 5){
+      tags.split(" ").forEach(w=>{ if(lev(tok,w) <= 2) score += 15; });
+      title.split(" ").forEach(w=>{ if(lev(tok,w) <= 2) score += 15; });
+      cat.split(" ").forEach(w=>{ if(lev(tok,w) <= 2) score += 15; });
     }
   });
   expanded.forEach(tag=>{
