@@ -225,11 +225,26 @@ const SYNONYMS = {
   "bertahan":["survival","escape"],
   "selamat":["survival","escape"],
   "masak":["cooking","restaurant","work"],
-  "menembak":["shooter","gun","pvp"]
+  "menembak":["shooter","gun","pvp"],
+  "dinosaurus":["dinosaur","survival"],
+  "dino":["dinosaur","survival"],
+  "purba":["dinosaur","prehistoric"],
+  "jurassic":["dinosaur","jurassic"],
+  "hidup":["survival","life"],
+  "zombie":["zombie","survival"],
+  "anime":["anime"]
 };
 const STOPWORDS = new Set(["game","games","map","yang","bisa","ada","tempat","untuk","di","roblox","aku","saya","mau","cari","carikan","tolong","dong","sih","aja","main","mainkan","bermain","sama","dengan","dan","atau","dari","ke","ini","itu","seperti","kayak","yangbisa","ingin","pengen","lagi","sangat","paling","cariin","aplikasi","hal","nya","si","kok"]);
 function tokenize(text){
   return (text||"").toLowerCase().replace(/[^a-z0-9\s]/g," ").split(/\s+/).filter(w=>w && !STOPWORDS.has(w));
+}
+function translateQuery(q){
+  const out = [];
+  tokenize(q).forEach(t=>{
+    const eng = (SYNONYMS[t]||[t])[0];
+    if(!out.includes(eng)) out.push(eng);
+  });
+  return out.join(" ");
 }
 function expandTokens(tokens){
   const tags = new Set();
@@ -300,7 +315,15 @@ const GAMES = [
 {id:"strongest-battlegrounds",title:"The Strongest Battlegrounds",place:10449761463,img:"https://tr.rbxcdn.com/180DAY-c947df5b221c30672c3591247a8c6495/768/432/Image/Png/noFilter",cat:"Action/PVP",rating:93,playing:31800,tags:["fighting","combat","pvp","battle","anime"],mechanics:["Bisa berantem pakai jurus anime","Kombo dan ultimate","Lawan pemain lain di arena"],desc:"Battlegrounds anime dengan jurus-jurus dahsyat dan kombo mematikan.",link:"https://www.roblox.com/discover/?Keyword=The%20Strongest%20Battlegrounds",color:["#facc15","#713f12"]},
 {id:"blox-fruits",title:"Blox Fruits",place:2753915549,img:"https://tr.rbxcdn.com/180DAY-09e621f1df2e404a391adf389d2bea47/768/432/Image/Png/noFilter",cat:"Action/PVP",rating:94,playing:41200,tags:["fighting","combat","sea","boat","island","exploration","sword"],mechanics:["Bisa berlayar pakai kapal ke pulau baru","Bertarung pakai buah dan pedang","Naik level dan jadi bajak laut terkuat"],desc:"Jadi bajak laut atau marinir: makan buah, berlayar antar pulau, dan bertarung.",link:"https://www.roblox.com/games/2753915549/Blox-Fruits",color:["#84cc16","#1a2e05"]},
 {id:"jailbreak",title:"Jailbreak",place:606849621,img:"https://tr.rbxcdn.com/180DAY-1d1f30a0c717b1d413e51eaaee060b17/768/432/Image/Png/noFilter",cat:"Action/PVP",rating:91,playing:13800,tags:["escape","police","rob","thief","car","driving","prison"],mechanics:["Bisa kabur dari penjara","Rampok bank dan toko","Jadi polisi atau penjahat"],desc:"Kabur dari penjara, rampok, dan kabur naik mobil — atau jadi polisi yang menangkap.",link:"https://www.roblox.com/discover/?Keyword=Jailbreak",color:["#64748b","#020617"]},
-{id:"natural-disaster",title:"Natural Disaster Survival",place:189707,img:"https://tr.rbxcdn.com/180DAY-7ea7065a02f8cff80f8b0270a9ad2d3b/768/432/Image/Png/noFilter",cat:"Action/PVP",rating:88,playing:6900,tags:["survival","escape","disaster"],mechanics:["Bisa bertahan dari bencana alam","Kabur dari gempa, tsunami, dan meteor","Main bareng teman"],desc:"Bertahan dari bencana alam acak di tiap ronde — gempa, banjir, sampai meteor.",link:"https://www.roblox.com/discover/?Keyword=Natural%20Disaster%20Survival",color:["#14b8a6","#042f2e"]}
+{id:"natural-disaster",title:"Natural Disaster Survival",place:189707,img:"https://tr.rbxcdn.com/180DAY-7ea7065a02f8cff80f8b0270a9ad2d3b/768/432/Image/Png/noFilter",cat:"Action/PVP",rating:88,playing:6900,tags:["survival","escape","disaster"],mechanics:["Bisa bertahan dari bencana alam","Kabur dari gempa, tsunami, dan meteor","Main bareng teman"],desc:"Bertahan dari bencana alam acak di tiap ronde — gempa, banjir, sampai meteor.",link:"https://www.roblox.com/discover/?Keyword=Natural%20Disaster%20Survival",color:["#14b8a6","#042f2e"]},
+{id:"ride-a-dino",title:"Ride a Dino",place:93523763376122,img:"https://tr.rbxcdn.com/180DAY-f8fecae0178a0050091a98a328c31ef4/768/432/Image/Png/noFilter",cat:"Petualangan",rating:97,playing:22800,tags:["dinosaur","survival","ride","pet","adventure"],mechanics:["Naik dinosaurus","Kumpul dan rawat dinosaurus","Jelajah dunia bareng teman"],desc:"Naik dan kumpulkan dinosaurus, lalu jelajahi dunia bersama mereka.",link:"https://www.roblox.com/games/93523763376122",color:["#22c55e","#052e16"]},
+{id:"prior-extinction",title:"Prior Extinction - Dinosaur Survival!",place:6698800091,img:"https://tr.rbxcdn.com/180DAY-90184c4966d92bca536d383fc5c351c0/768/432/Image/Png/noFilter",cat:"Petualangan",rating:78,playing:2600,tags:["dinosaur","survival","adventure"],mechanics:["Jadi dinosaurus dan bertahan hidup","Berburu atau kabur dari predator","Jelajah dunia prasejarah"],desc:"Game bertahan hidup dinosaurus: jadi dinosaurus, berburu, dan bertahan di dunia prasejarah.",link:"https://www.roblox.com/games/6698800091",color:["#84cc16","#1a2e05"]},
+{id:"primeval-earth",title:"Primeval Earth | Dinosaur Survival",place:10696301650,img:"https://tr.rbxcdn.com/180DAY-8e59c9fe144a66b4ae15fb75de4b1b86/768/432/Image/Png/noFilter",cat:"Petualangan",rating:82,playing:1100,tags:["dinosaur","survival","adventure"],mechanics:["Jadi dinosaurus dan bertahan hidup","Jelajah dunia purba","Main bareng teman"],desc:"Bertahan hidup sebagai dinosaurus di dunia purba Primeval Earth.",link:"https://www.roblox.com/games/10696301650",color:["#a16207","#292524"]},
+{id:"jurassic-blocky",title:"Jurassic Blocky",place:11653088948,img:"https://tr.rbxcdn.com/180DAY-68bf9bbe00caa1533deb6dfaf44ccda8/768/432/Image/Png/noFilter",cat:"Petualangan",rating:89,playing:3600,tags:["dinosaur","survival","adventure"],mechanics:["Bertahan hidup sebagai dinosaurus","Jelajah dunia blocky","Main bareng teman"],desc:"Game dinosaurus bertahan hidup bergaya blocky di dunia Jurassic.",link:"https://www.roblox.com/games/11653088948",color:["#0ea5e9","#082f49"]},
+{id:"primal-pursuit",title:"Primal Pursuit - Humans vs Dinosaurs",place:12076775711,img:"https://tr.rbxcdn.com/180DAY-ae6d8b9d3cb1ec60df2fed6c043fe24d/768/432/Image/Png/noFilter",cat:"Petualangan",rating:86,playing:1200,tags:["dinosaur","survival","adventure","hunt"],mechanics:["Jadi manusia atau dinosaurus","Berburu atau kabur","Main bareng teman"],desc:"Manusia lawan dinosaurus: berburu atau kabur di dunia prasejarah.",link:"https://www.roblox.com/games/12076775711",color:["#dc2626","#450a0a"]},
+{id:"be-dino",title:"Be Dino - Jurassic Dinosaur Simulation",place:129907317028750,img:"https://tr.rbxcdn.com/180DAY-17282a2fc89ab5f29194628d23ce4924/768/432/Image/Png/noFilter",cat:"Petualangan",rating:90,playing:619,tags:["dinosaur","simulation","adventure"],mechanics:["Jadi dinosaurus","Simulasi hidup dinosaurus","Jelajah dunia jurassic"],desc:"Simulasi jadi dinosaurus di dunia jurassic.",link:"https://www.roblox.com/games/129907317028750",color:["#65a30d","#1a2e05"]},
+{id:"dinosaur-life",title:"Dinosaur Life",place:75541741887441,img:"https://tr.rbxcdn.com/180DAY-8988545acfa51457d9ee26274968c8ee/768/432/Image/Png/noFilter",cat:"Petualangan",rating:89,playing:925,tags:["dinosaur","survival","adventure"],mechanics:["Hidup sebagai dinosaurus","Bertahan dan berkembang","Jelajah dunia bareng teman"],desc:"Jalani hidup sebagai dinosaurus: bertahan, berkembang, dan menjelajah.",link:"https://www.roblox.com/games/75541741887441",color:["#16a34a","#052e16"]},
+{id:"dinosaur-world-mobile",title:"Dinosaur World Mobile",place:2454499969,img:"https://tr.rbxcdn.com/180DAY-0ab94fef7e01fdea5d8fddbe4cfaeef5/768/432/Image/Png/noFilter",cat:"Petualangan",rating:84,playing:153,tags:["dinosaur","adventure","simulation"],mechanics:["Jelajah dunia dinosaurus","Main sebagai dinosaurus","Main bareng teman"],desc:"Dunia dinosaurus versi mobile untuk dijelajahi.",link:"https://www.roblox.com/games/2454499969",color:["#0891b2","#083344"]},
 ];
 console.log("RoFind database:", GAMES.length, "game");
 
@@ -352,7 +375,7 @@ let currentCat = "Semua";
 let favOnly = false;
 let lastResults = GAMES.map(g=>({...g, _score:1}));
 
-const CATS = ["Semua","Balapan","Air & Eksplorasi","Simulasi","Obby/Parkour","Horor","Roleplay","Action/PVP"];
+const CATS = ["Semua","Balapan","Air & Eksplorasi","Simulasi","Obby/Parkour","Horor","Roleplay","Action/PVP","Petualangan"];
 const ACCENTS = [
   {name:"Neon Purple", c:"#8b5cf6"}, {name:"Cyber Blue", c:"#38bdf8"},
   {name:"Emerald Green", c:"#10b981"}, {name:"Crimson Red", c:"#ef4444"},
@@ -597,7 +620,7 @@ function runSearch(saveHist){
     if(saveHist && q && window.RoFindBridge && window.RoFindBridge.searchLive){
       liveQuery = q;
       document.getElementById("status").textContent += " • Mencari live di Roblox...";
-      try{ window.RoFindBridge.searchLive(q); }catch(e){}
+      try{ window.RoFindBridge.searchLive(translateQuery(q)); }catch(e){}
     }
   }, 350);
 }
